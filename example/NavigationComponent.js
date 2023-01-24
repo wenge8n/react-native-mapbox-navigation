@@ -10,7 +10,6 @@ const Navigation = props => {
     <View style={styles.container}>
       <View style={styles.mapContainer}>
         <MapboxNavigation
-          showsEndOfRouteFeedback={true}
           shouldSimulateRoute={true}
           origin={origin}
           destination={destination}

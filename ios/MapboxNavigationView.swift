@@ -75,9 +75,9 @@ class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
     let destinationWaypoint = Waypoint(coordinate: CLLocationCoordinate2D(latitude: destination[1] as! CLLocationDegrees, longitude: destination[0] as! CLLocationDegrees))
 
     // let options = NavigationRouteOptions(waypoints: [originWaypoint, destinationWaypoint])
-    let options = NavigationRouteOptions(waypoints: [originWaypoint, destinationWaypoint], profileIdentifier: .automobileAvoidingTraffic)
+    let routeOptions = NavigationRouteOptions(waypoints: [originWaypoint, destinationWaypoint], profileIdentifier: .automobileAvoidingTraffic)
 
-    Directions.shared.calculate(options) { [weak self] (_, result) in
+    Directions.shared.calculate(routeOptions) { [weak self] (_, result) in
       guard let strongSelf = self, let parentVC = strongSelf.parentViewController else {
         return
       }
@@ -86,14 +86,14 @@ class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
         case .failure(let error):
           strongSelf.onError!(["message": error.localizedDescription])
         case .success(let response):
-          guard let weakSelf = self else {
-            return
-          }
-          
-          let navigationService = MapboxNavigationService(routeResponse: response, routeIndex: 0, routeOptions: options, simulating: strongSelf.shouldSimulateRoute ? .always : .never)
+          let indexedRouteResponse = IndexedRouteResponse(routeResponse: response, routeIndex: 0)
+          let navigationService = MapboxNavigationService(indexedRouteResponse: indexedRouteResponse,
+                                                          customRoutingProvider: NavigationSettings.shared.directions,
+                                                          credentials: NavigationSettings.shared.directions.credentials,
+                                                          simulating: strongSelf.shouldSimulateRoute ? .always : .never)
           
           let navigationOptions = NavigationOptions(navigationService: navigationService)
-          let vc = NavigationViewController(for: response, routeIndex: 0, routeOptions: options, navigationOptions: navigationOptions)
+          let vc = NavigationViewController(for: indexedRouteResponse, navigationOptions: navigationOptions)
 
           vc.showsEndOfRouteFeedback = strongSelf.showsEndOfRouteFeedback
           StatusView.appearance().isHidden = strongSelf.hideStatusView

@@ -102,6 +102,16 @@ class MapboxNavigationView: UIView, NavigationViewControllerDelegate {
           
           vc.delegate = strongSelf
         
+          // Modify default `NavigationViewportDataSource` and `NavigationCameraStateTransition` to change
+          // `NavigationCamera` behavior during active guidance.
+          if let mapView = vc.navigationMapView?.mapView {
+              let customViewportDataSource = CustomViewportDataSource(mapView)
+              vc.navigationMapView?.navigationCamera.viewportDataSource = customViewportDataSource
+
+              let customCameraStateTransition = CustomCameraStateTransition(mapView)
+              vc.navigationMapView?.navigationCamera.cameraStateTransition = customCameraStateTransition
+          }
+          
           parentVC.addChild(vc)
           strongSelf.addSubview(vc.view)
           vc.view.frame = strongSelf.bounds
